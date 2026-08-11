@@ -734,12 +734,12 @@
     .quick-actions { grid-template-columns: 1fr; }
   }
 
-  @media (max-width: 430px) and (min-height: 650px) {
+  @media (max-width: 430px) {
     body[data-mode="control"] {
       min-height: 100dvh;
     }
     .control-view {
-      padding: 5px;
+      padding: 5px max(5px, env(safe-area-inset-right)) max(5px, env(safe-area-inset-bottom)) max(5px, env(safe-area-inset-left));
     }
     .control-header {
       gap: 6px;
