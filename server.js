@@ -4,6 +4,7 @@ const path = require("path");
 
 const PORT = Number(process.env.PORT || 4173);
 const PUBLIC_DIR = path.join(__dirname, "public");
+const REDIS_URL = process.env.REDIS_URL || process.env.RENDER_KV_URL || "";
 
 const defaultState = () => ({
   homeName: "HOME",
@@ -22,10 +23,68 @@ const defaultState = () => ({
 
 const rooms = new Map();
 const clients = new Map();
+let redisClient = null;
+let redisReady = false;
+let redisStarted = false;
 
-function getState(room) {
+async function startRedis() {
+  if (redisStarted || !REDIS_URL) return;
+  redisStarted = true;
+
+  try {
+    const { createClient } = require("redis");
+    redisClient = createClient({ url: REDIS_URL });
+    redisClient.on("error", err => {
+      redisReady = false;
+      console.error("Redis error:", err.message);
+    });
+    redisClient.on("ready", () => {
+      redisReady = true;
+      console.log("Redis persistence connected");
+    });
+    await redisClient.connect();
+  } catch (err) {
+    redisReady = false;
+    redisClient = null;
+    console.error("Redis persistence disabled:", err.message);
+  }
+}
+
+function stateKey(room) {
+  return `scoreboard:${room}`;
+}
+
+async function getState(room) {
+  if (rooms.has(room)) return rooms.get(room);
+
   if (!rooms.has(room)) rooms.set(room, defaultState());
+  await startRedis();
+
+  if (redisReady && redisClient) {
+    try {
+      const saved = await redisClient.get(stateKey(room));
+      if (saved) {
+        const state = { ...defaultState(), ...JSON.parse(saved) };
+        rooms.set(room, state);
+      }
+    } catch (err) {
+      console.error(`Unable to load ${room} from Redis:`, err.message);
+    }
+  }
+
   return rooms.get(room);
+}
+
+async function saveState(room, state) {
+  await startRedis();
+
+  if (redisReady && redisClient) {
+    try {
+      await redisClient.set(stateKey(room), JSON.stringify(state));
+    } catch (err) {
+      console.error(`Unable to save ${room} to Redis:`, err.message);
+    }
+  }
 }
 
 function roomClients(room) {
@@ -38,8 +97,8 @@ function sendEvent(res, event, data) {
   res.write(`data: ${JSON.stringify(data)}\n\n`);
 }
 
-function broadcast(room) {
-  const state = getState(room);
+async function broadcast(room) {
+  const state = await getState(room);
   for (const res of roomClients(room)) {
     sendEvent(res, "scoreboard", state);
   }
@@ -53,8 +112,8 @@ function cleanRoom(value) {
   return String(value || "FIELD1").toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 24) || "FIELD1";
 }
 
-function patchState(room, patch) {
-  const state = getState(room);
+async function patchState(room, patch) {
+  const state = await getState(room);
 
   if (typeof patch.homeName === "string") state.homeName = patch.homeName.slice(0, 16).toUpperCase() || "HOME";
   if (typeof patch.awayName === "string") state.awayName = patch.awayName.slice(0, 16).toUpperCase() || "GUEST";
@@ -73,14 +132,16 @@ function patchState(room, patch) {
     state.updatedAt = Date.now();
   }
 
-  broadcast(room);
-  return getState(room);
+  const next = rooms.get(room);
+  await saveState(room, next);
+  await broadcast(room);
+  return next;
 }
 
 function serveStatic(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   let pathname = decodeURIComponent(url.pathname);
-  if (pathname === "/" || pathname === "/display" || pathname === "/control") pathname = "/index.html";
+  if (pathname === "/" || pathname === "/display" || pathname === "/control" || pathname === "/hub") pathname = "/index.html";
 
   const filePath = path.normalize(path.join(PUBLIC_DIR, pathname));
   if (!filePath.startsWith(PUBLIC_DIR)) {
@@ -102,7 +163,7 @@ function serveStatic(req, res) {
   });
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const room = cleanRoom(url.searchParams.get("room"));
 
@@ -113,7 +174,7 @@ const server = http.createServer((req, res) => {
       Connection: "keep-alive",
       "Access-Control-Allow-Origin": "*"
     });
-    sendEvent(res, "scoreboard", getState(room));
+    sendEvent(res, "scoreboard", await getState(room));
     const set = roomClients(room);
     set.add(res);
     req.on("close", () => set.delete(res));
@@ -122,7 +183,7 @@ const server = http.createServer((req, res) => {
 
   if (req.method === "GET" && url.pathname === "/state") {
     res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-store" });
-    res.end(JSON.stringify(getState(room)));
+    res.end(JSON.stringify(await getState(room)));
     return;
   }
 
@@ -132,9 +193,9 @@ const server = http.createServer((req, res) => {
       body += chunk;
       if (body.length > 20_000) req.destroy();
     });
-    req.on("end", () => {
+    req.on("end", async () => {
       try {
-        const next = patchState(room, JSON.parse(body || "{}"));
+        const next = await patchState(room, JSON.parse(body || "{}"));
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(next));
       } catch {

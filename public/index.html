@@ -1,3 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Field Scoreboard</title>
+</head>
+<body>
 <div id="scoreboard-app">
   <section class="display-view" data-view="display">
     <div class="top-strip">
@@ -118,6 +128,24 @@
       <button type="button" class="danger" data-reset-game>Reset Game</button>
     </div>
   </section>
+
+  <section class="hub-view" data-view="hub">
+    <header class="hub-header">
+      <div>
+        <p>Live Scores</p>
+        <h1>Field Hub</h1>
+      </div>
+      <div class="live-pill is-live">5 FIELDS</div>
+    </header>
+
+    <main class="hub-grid" aria-label="All field scores">
+      <article class="field-card" data-hub-card="FIELD1"></article>
+      <article class="field-card" data-hub-card="FIELD2"></article>
+      <article class="field-card" data-hub-card="FIELD3"></article>
+      <article class="field-card" data-hub-card="FIELD4"></article>
+      <article class="field-card" data-hub-card="FIELD5"></article>
+    </main>
+  </section>
 </div>
 
 <style>
@@ -153,9 +181,10 @@
     font-weight: 800;
     touch-action: manipulation;
   }
-  .display-view, .control-view { display: none; }
+  .display-view, .control-view, .hub-view { display: none; }
   body[data-mode="display"] .display-view { display: flex; }
   body[data-mode="control"] .control-view { display: block; }
+  body[data-mode="hub"] .hub-view { display: block; }
 
   .display-view {
     min-height: 100dvh;
@@ -360,6 +389,108 @@
   }
   .danger { background: #4b1818; }
 
+  .hub-view {
+    min-height: 100dvh;
+    padding: 14px;
+  }
+  .hub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    max-width: 1180px;
+    margin: 0 auto 12px;
+  }
+  .hub-header p {
+    margin: 0 0 2px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 900;
+  }
+  .hub-header h1 {
+    margin: 0;
+    font-size: 34px;
+    line-height: 1;
+  }
+  .hub-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  .field-card {
+    min-height: 190px;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .field-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 12px;
+    color: var(--muted);
+    background: #0b111b;
+    font-size: 14px;
+    font-weight: 900;
+  }
+  .hub-teams {
+    display: grid;
+  }
+  .hub-team {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 78px;
+    align-items: center;
+    min-height: 56px;
+    border-top: 1px solid var(--line);
+  }
+  .hub-team span {
+    min-width: 0;
+    padding: 0 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 28px;
+    font-weight: 950;
+  }
+  .hub-team strong {
+    height: 100%;
+    display: grid;
+    place-items: center;
+    color: var(--amber);
+    background: #070b11;
+    font-size: 42px;
+    font-variant-numeric: tabular-nums;
+  }
+  .hub-meta {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border-top: 1px solid var(--line);
+  }
+  .hub-meta div {
+    min-height: 52px;
+    display: grid;
+    place-items: center;
+    border-right: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+  }
+  .hub-meta div:last-child {
+    border-right: 0;
+  }
+  .hub-meta strong {
+    display: block;
+    color: var(--ink);
+    font-size: 21px;
+    line-height: 1;
+  }
+  .hub-pitches strong {
+    color: var(--blue);
+  }
+
   @media (min-width: 900px) {
     .control-view {
       padding: 18px;
@@ -383,6 +514,9 @@
     }
     .team-name {
       padding: 8px 14px;
+    }
+    .hub-grid {
+      grid-template-columns: 1fr;
     }
   }
 
@@ -449,6 +583,27 @@
     }
     .pitch-controls strong {
       font-size: 42px;
+    }
+    .hub-view {
+      padding: 8px;
+    }
+    .hub-header {
+      margin-bottom: 8px;
+    }
+    .hub-header h1 {
+      font-size: 24px;
+    }
+    .field-card {
+      min-height: 160px;
+    }
+    .hub-team span {
+      font-size: 22px;
+    }
+    .hub-team strong {
+      font-size: 36px;
+    }
+    .hub-meta {
+      grid-template-columns: repeat(3, 1fr);
     }
   }
 
@@ -534,6 +689,42 @@
     .pitch-controls strong {
       font-size: 34px;
     }
+    .hub-view {
+      padding: 8px;
+    }
+    .hub-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      max-width: none;
+    }
+    .field-card {
+      min-height: 136px;
+    }
+    .field-title {
+      padding: 6px 8px;
+      font-size: 11px;
+    }
+    .hub-team {
+      min-height: 38px;
+      grid-template-columns: minmax(0, 1fr) 50px;
+    }
+    .hub-team span {
+      padding: 0 8px;
+      font-size: 16px;
+    }
+    .hub-team strong {
+      font-size: 28px;
+    }
+    .hub-meta {
+      grid-template-columns: repeat(5, 1fr);
+    }
+    .hub-meta div {
+      min-height: 34px;
+      font-size: 9px;
+    }
+    .hub-meta strong {
+      font-size: 15px;
+    }
   }
 
   @media (max-width: 560px) {
@@ -542,17 +733,112 @@
     .pitch-controls { grid-template-columns: 1fr; }
     .quick-actions { grid-template-columns: 1fr; }
   }
+
+  @media (max-width: 430px) and (min-height: 650px) {
+    body[data-mode="control"] {
+      min-height: 100dvh;
+    }
+    .control-view {
+      padding: 5px;
+    }
+    .control-header {
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .control-header p {
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.1;
+    }
+    .control-header h1 {
+      font-size: 15px;
+      line-height: 1.1;
+    }
+    .control-header .live-pill {
+      padding: 5px 7px;
+      font-size: 11px;
+    }
+    .setup-panel, .score-controls article, .inning-controls, .count-controls, .pitch-controls article, .quick-actions {
+      padding: 5px;
+      margin-top: 5px;
+      gap: 5px;
+    }
+    .setup-panel {
+      grid-template-columns: minmax(0, 1fr) 64px;
+    }
+    label {
+      font-size: 11px;
+      line-height: 1.1;
+    }
+    input {
+      min-height: 34px;
+      margin-top: 2px;
+      padding: 0 8px;
+      font-size: 13px;
+    }
+    button {
+      min-height: 38px;
+      font-size: 13px;
+    }
+    .score-controls, .pitch-controls {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+    }
+    .team-input {
+      margin-bottom: 5px;
+    }
+    .score-edit {
+      grid-template-columns: 38px minmax(0, 1fr) 38px;
+      gap: 4px;
+    }
+    .score-edit strong {
+      font-size: 31px;
+    }
+    .inning-controls {
+      grid-template-columns: 38px minmax(52px, 1fr) 38px minmax(102px, 1.2fr);
+    }
+    .inning-controls .wide {
+      grid-column: auto;
+    }
+    .inning-controls span, .count-controls span, .pitch-controls span {
+      font-size: 10px;
+      line-height: 1;
+    }
+    .inning-controls strong {
+      font-size: 26px;
+    }
+    .count-controls {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .count-controls strong {
+      font-size: 24px;
+    }
+    .pitch-controls strong {
+      font-size: 28px;
+    }
+    .clear-pitch {
+      min-height: 30px;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+    .quick-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
 </style>
 
 <script>
 (() => {
   const params = new URLSearchParams(location.search);
-  const pathMode = location.pathname.includes("control") ? "control" : "display";
+  const pathMode = location.pathname.includes("hub") ? "hub" : location.pathname.includes("control") ? "control" : "display";
   document.body.dataset.mode = params.get("mode") || pathMode;
 
+  const hubRooms = ["FIELD1", "FIELD2", "FIELD3", "FIELD4", "FIELD5"];
   let room = cleanRoom(params.get("room") || localStorage.getItem("scoreboard-room") || "FIELD1");
   let state = null;
+  const hubStates = new Map();
   let source = null;
+  let hubSources = [];
   let reconnectTimer = null;
 
   const $all = selector => Array.from(document.querySelectorAll(selector));
@@ -562,7 +848,21 @@
     return String(value || "FIELD1").toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 24) || "FIELD1";
   }
 
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#39;"
+    })[char]);
+  }
+
   function connect() {
+    if (document.body.dataset.mode === "hub") {
+      connectHub();
+      return;
+    }
     if (source) source.close();
     source = new EventSource(`/events?room=${encodeURIComponent(room)}`);
     source.addEventListener("open", () => setLive(true));
@@ -575,6 +875,24 @@
       setLive(false);
       clearTimeout(reconnectTimer);
       reconnectTimer = setTimeout(connect, 2500);
+    });
+  }
+
+  function connectHub() {
+    hubSources.forEach(item => item.source.close());
+    hubSources = hubRooms.map(hubRoom => {
+      const source = new EventSource(`/events?room=${encodeURIComponent(hubRoom)}`);
+      source.addEventListener("scoreboard", event => {
+        hubStates.set(hubRoom, JSON.parse(event.data));
+        renderHub();
+      });
+      source.addEventListener("error", () => {
+        window.setTimeout(() => {
+          source.close();
+          connectHub();
+        }, 3000);
+      });
+      return { room: hubRoom, source };
     });
   }
 
@@ -672,6 +990,31 @@
     $all("[data-room-input]").forEach(el => { if (document.activeElement !== el) el.value = room; });
   }
 
+  function renderHub() {
+    hubRooms.forEach(hubRoom => {
+      const state = hubStates.get(hubRoom);
+      const card = document.querySelector(`[data-hub-card="${hubRoom}"]`);
+      if (!card || !state) return;
+      card.innerHTML = `
+        <div class="field-title">
+          <span>${hubRoom.replace("FIELD", "FIELD ")}</span>
+          <span>${state.half} ${state.inning}</span>
+        </div>
+        <div class="hub-teams">
+          <div class="hub-team"><span>${escapeHtml(state.awayName)}</span><strong>${state.awayScore}</strong></div>
+          <div class="hub-team"><span>${escapeHtml(state.homeName)}</span><strong>${state.homeScore}</strong></div>
+        </div>
+        <div class="hub-meta">
+          <div>B<strong>${state.balls}</strong></div>
+          <div>S<strong>${state.strikes}</strong></div>
+          <div>O<strong>${state.outs}</strong></div>
+          <div class="hub-pitches">G P<strong>${state.awayPitchCount}</strong></div>
+          <div class="hub-pitches">H P<strong>${state.homePitchCount}</strong></div>
+        </div>
+      `;
+    });
+  }
+
   document.addEventListener("click", event => {
     const adjust = event.target.closest("[data-adjust]");
     const pitch = event.target.closest("[data-pitch]");
@@ -706,3 +1049,5 @@
   connect();
 })();
 </script>
+</body>
+</html>

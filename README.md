@@ -26,6 +26,12 @@ http://localhost:4173/control?room=FIELD1
 
 Use the same room code on both devices.
 
+Open the five-field hub:
+
+```text
+http://localhost:4173/hub
+```
+
 ## Control Flow
 
 - Ball, Strike, and Foul automatically add one pitch to the defensive pitcher.
@@ -47,6 +53,24 @@ Once deployed, use:
 ```text
 https://your-scoreboard-site.example/display?room=FIELD1
 https://your-scoreboard-site.example/control?room=FIELD1
+https://your-scoreboard-site.example/hub
 ```
 
-The app keeps game state in memory. If the host restarts, the score resets.
+Available field rooms are `FIELD1`, `FIELD2`, `FIELD3`, `FIELD4`, and `FIELD5`.
+
+## Render Persistence
+
+The app can save live field scores to Render Key Value, which is Redis-compatible.
+
+1. In Render, create a Key Value instance in the same region as the scoreboard web service.
+2. Use a paid Key Value instance if you want disk-backed persistence.
+3. Copy the Key Value internal connection string.
+4. In the scoreboard web service, add an environment variable:
+
+```text
+REDIS_URL=your-render-key-value-internal-connection-string
+```
+
+5. Redeploy the web service.
+
+If `REDIS_URL` is not set, the app still works, but scores are stored only in memory and reset when the service restarts.
