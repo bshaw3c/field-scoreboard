@@ -1,0 +1,510 @@
+<div id="scoreboard-app">
+  <section class="display-view" data-view="display">
+    <div class="top-strip">
+      <div class="room-pill">ROOM <span data-room-label>FIELD1</span></div>
+      <div class="live-pill" data-live>CONNECTING</div>
+    </div>
+
+    <main class="board" aria-label="Scoreboard display">
+      <div class="team-row">
+        <div class="team-name" data-away-name>GUEST</div>
+        <div class="team-score" data-away-score>0</div>
+      </div>
+      <div class="team-row home">
+        <div class="team-name" data-home-name>HOME</div>
+        <div class="team-score" data-home-score>0</div>
+      </div>
+
+      <div class="game-line">
+        <div>
+          <span class="label">INNING</span>
+          <strong data-inning>1</strong>
+        </div>
+        <div>
+          <span class="label">HALF</span>
+          <strong data-half>TOP</strong>
+        </div>
+      </div>
+
+      <div class="count-line">
+        <div><span>B</span><strong data-balls>0</strong></div>
+        <div><span>S</span><strong data-strikes>0</strong></div>
+        <div><span>O</span><strong data-outs>0</strong></div>
+      </div>
+
+      <div class="pitch-line">
+        <div>
+          <span class="label">GUEST PITCHES</span>
+          <strong data-away-pitch-count>0</strong>
+        </div>
+        <div>
+          <span class="label">HOME PITCHES</span>
+          <strong data-home-pitch-count>0</strong>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <section class="control-view" data-view="control">
+    <header class="control-header">
+      <div>
+        <p>Room <strong data-room-label>FIELD1</strong></p>
+        <h1>Scoreboard Control</h1>
+      </div>
+      <div class="live-pill" data-live>CONNECTING</div>
+    </header>
+
+    <div class="setup-panel">
+      <label>Room code <input data-room-input maxlength="24" autocomplete="off"></label>
+      <button type="button" data-join>Join</button>
+    </div>
+
+    <div class="score-controls">
+      <article>
+        <input class="team-input" data-away-input maxlength="16" aria-label="Guest team name">
+        <div class="score-edit">
+          <button type="button" data-adjust="awayScore:-1">-</button>
+          <strong data-away-score>0</strong>
+          <button type="button" data-adjust="awayScore:1">+</button>
+        </div>
+      </article>
+      <article>
+        <input class="team-input" data-home-input maxlength="16" aria-label="Home team name">
+        <div class="score-edit">
+          <button type="button" data-adjust="homeScore:-1">-</button>
+          <strong data-home-score>0</strong>
+          <button type="button" data-adjust="homeScore:1">+</button>
+        </div>
+      </article>
+    </div>
+
+    <div class="inning-controls">
+      <button type="button" data-adjust="inning:-1">-</button>
+      <div><span>Inning</span><strong data-inning>1</strong></div>
+      <button type="button" data-adjust="inning:1">+</button>
+      <button type="button" class="wide" data-end-half data-half-action>TOP (End Half)</button>
+    </div>
+
+    <div class="count-controls">
+      <button type="button" data-pitch="ball"><span>Ball</span><strong data-balls>0</strong></button>
+      <button type="button" data-pitch="strike"><span>Strike</span><strong data-strikes>0</strong></button>
+      <button type="button" data-pitch="foul"><span>Foul</span><strong>+</strong></button>
+      <button type="button" data-out><span>Out</span><strong data-outs>0</strong></button>
+    </div>
+
+    <div class="pitch-controls">
+      <article>
+        <span>Guest Pitcher</span>
+        <div class="score-edit">
+          <button type="button" data-adjust="awayPitchCount:-1">-</button>
+          <strong data-away-pitch-count>0</strong>
+          <button type="button" data-adjust="awayPitchCount:1">+</button>
+        </div>
+        <button type="button" class="clear-pitch" data-clear-pitch="awayPitchCount">Clear Guest</button>
+      </article>
+      <article>
+        <span>Home Pitcher</span>
+        <div class="score-edit">
+          <button type="button" data-adjust="homePitchCount:-1">-</button>
+          <strong data-home-pitch-count>0</strong>
+          <button type="button" data-adjust="homePitchCount:1">+</button>
+        </div>
+        <button type="button" class="clear-pitch" data-clear-pitch="homePitchCount">Clear Home</button>
+      </article>
+    </div>
+
+    <div class="quick-actions">
+      <button type="button" data-clear-count>Clear Count</button>
+      <button type="button" class="danger" data-reset-game>Reset Game</button>
+    </div>
+  </section>
+</div>
+
+<style>
+  :root {
+    color-scheme: dark;
+    --ink: #f9fafb;
+    --muted: #b8c0cc;
+    --line: rgba(255,255,255,.18);
+    --panel: #111827;
+    --panel-2: #1f2937;
+    --green: #26d07c;
+    --amber: #ffcf5c;
+    --red: #f35f5f;
+    --blue: #6bbcff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #05070b;
+    color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  button, input { font: inherit; }
+  button {
+    min-height: 52px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #263241;
+    color: var(--ink);
+    font-weight: 800;
+    touch-action: manipulation;
+  }
+  .display-view, .control-view { display: none; }
+  body[data-mode="display"] .display-view,
+  body[data-mode="control"] .control-view { display: block; }
+
+  .top-strip {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px;
+  }
+  .room-pill, .live-pill {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--muted);
+    font-size: clamp(13px, 2vw, 18px);
+    font-weight: 900;
+    letter-spacing: 0;
+  }
+  .live-pill.is-live { color: #06140d; background: var(--green); border-color: var(--green); }
+  .live-pill.is-offline { color: #180606; background: var(--red); border-color: var(--red); }
+
+  .board {
+    width: min(100vw, 1180px);
+    margin: 0 auto;
+    padding: clamp(10px, 2.4vw, 28px);
+  }
+  .team-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(120px, 24vw);
+    align-items: center;
+    min-height: clamp(120px, 25vh, 250px);
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .team-row + .team-row { margin-top: 12px; }
+  .team-row.home { border-color: rgba(107,188,255,.48); }
+  .team-name {
+    padding: 12px 24px;
+    font-size: clamp(48px, 12vw, 152px);
+    line-height: .9;
+    font-weight: 950;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .team-score {
+    height: 100%;
+    display: grid;
+    place-items: center;
+    background: #0b111b;
+    color: var(--amber);
+    font-size: clamp(76px, 20vw, 230px);
+    line-height: 1;
+    font-weight: 1000;
+    font-variant-numeric: tabular-nums;
+  }
+  .game-line, .count-line, .pitch-line {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .count-line { grid-template-columns: repeat(3, 1fr); }
+  .game-line > div, .count-line > div, .pitch-line > div {
+    min-height: clamp(72px, 13vh, 140px);
+    display: grid;
+    place-items: center;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-2);
+  }
+  .label, .count-line span {
+    color: var(--muted);
+    font-size: clamp(16px, 3vw, 28px);
+    font-weight: 900;
+  }
+  .game-line strong, .count-line strong, .pitch-line strong {
+    color: var(--ink);
+    font-size: clamp(42px, 10vw, 104px);
+    line-height: .9;
+    font-weight: 1000;
+  }
+  .count-line > div {
+    grid-template-columns: auto auto;
+    gap: 18px;
+  }
+  .pitch-line strong { color: var(--blue); }
+
+  .control-view {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 12px;
+  }
+  .control-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .control-header p { margin: 0 0 2px; color: var(--muted); font-weight: 800; }
+  .control-header h1 { margin: 0; font-size: 26px; }
+  .setup-panel, .score-controls article, .inning-controls, .count-controls, .pitch-controls article, .quick-actions {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    padding: 10px;
+    margin-top: 10px;
+  }
+  .setup-panel {
+    display: grid;
+    grid-template-columns: 1fr 96px;
+    gap: 10px;
+    align-items: end;
+  }
+  label { color: var(--muted); font-weight: 800; }
+  input {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 4px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0 12px;
+    background: #090d14;
+    color: var(--ink);
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  .score-controls {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .team-input { margin: 0 0 10px; }
+  .score-edit {
+    display: grid;
+    grid-template-columns: 60px 1fr 60px;
+    align-items: center;
+    gap: 8px;
+  }
+  .score-edit strong {
+    text-align: center;
+    color: var(--amber);
+    font-size: 64px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .inning-controls {
+    display: grid;
+    grid-template-columns: 60px 1fr 60px 96px;
+    gap: 8px;
+    align-items: center;
+  }
+  .inning-controls div { text-align: center; }
+  .inning-controls span, .count-controls span, .pitch-controls span { display: block; color: var(--muted); font-size: 13px; font-weight: 900; }
+  .inning-controls strong { font-size: 42px; }
+  .count-controls, .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .count-controls strong { display: block; font-size: 34px; }
+  .pitch-controls {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .pitch-controls strong {
+    text-align: center;
+    color: var(--blue);
+    font-size: 48px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .clear-pitch {
+    width: 100%;
+    min-height: 44px;
+    margin-top: 8px;
+    background: #172235;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .danger { background: #4b1818; }
+  @media (max-width: 560px) {
+    .score-controls { grid-template-columns: 1fr; }
+    .count-controls { grid-template-columns: repeat(2, 1fr); }
+    .pitch-controls { grid-template-columns: 1fr; }
+    .quick-actions { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const pathMode = location.pathname.includes("control") ? "control" : "display";
+  document.body.dataset.mode = params.get("mode") || pathMode;
+
+  let room = cleanRoom(params.get("room") || localStorage.getItem("scoreboard-room") || "FIELD1");
+  let state = null;
+  let source = null;
+  let reconnectTimer = null;
+
+  const $all = selector => Array.from(document.querySelectorAll(selector));
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, Number(value) || 0));
+
+  function cleanRoom(value) {
+    return String(value || "FIELD1").toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 24) || "FIELD1";
+  }
+
+  function connect() {
+    if (source) source.close();
+    source = new EventSource(`/events?room=${encodeURIComponent(room)}`);
+    source.addEventListener("open", () => setLive(true));
+    source.addEventListener("scoreboard", event => {
+      state = JSON.parse(event.data);
+      render();
+      setLive(true);
+    });
+    source.addEventListener("error", () => {
+      setLive(false);
+      clearTimeout(reconnectTimer);
+      reconnectTimer = setTimeout(connect, 2500);
+    });
+  }
+
+  function setLive(isLive) {
+    $all("[data-live]").forEach(el => {
+      el.textContent = isLive ? "LIVE" : "OFFLINE";
+      el.classList.toggle("is-live", isLive);
+      el.classList.toggle("is-offline", !isLive);
+    });
+  }
+
+  async function update(patch) {
+    const response = await fetch(`/state?room=${encodeURIComponent(room)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch)
+    });
+    state = await response.json();
+    render();
+  }
+
+  function pitchingTeamKey(next = state) {
+    return next.half === "TOP" ? "homePitchCount" : "awayPitchCount";
+  }
+
+  function endHalfPatch(next = state) {
+    const inning = next.half === "BOT" ? next.inning + 1 : next.inning;
+    const half = next.half === "TOP" ? "BOT" : "TOP";
+    return { inning, half, balls: 0, strikes: 0, outs: 0 };
+  }
+
+  async function addOutFromPitch(patch) {
+    const nextOuts = clamp(state.outs + 1, 0, 2);
+    Object.assign(patch, { balls: 0, strikes: 0, outs: nextOuts });
+
+    if (state.outs >= 2 && confirm("That is the third out. End this half inning?")) {
+      Object.assign(patch, endHalfPatch({ ...state, ...patch }));
+    }
+  }
+
+  async function recordPitch(kind) {
+    if (!state) return;
+    const key = pitchingTeamKey();
+    const patch = { [key]: state[key] + 1 };
+
+    if (kind === "ball") {
+      if (state.balls >= 3) {
+        Object.assign(patch, { balls: 0, strikes: 0 });
+      } else {
+        patch.balls = state.balls + 1;
+      }
+    }
+
+    if (kind === "strike") {
+      if (state.strikes >= 2) {
+        await addOutFromPitch(patch);
+      } else {
+        patch.strikes = state.strikes + 1;
+      }
+    }
+
+    if (kind === "foul") {
+      patch.strikes = state.strikes >= 2 ? 2 : state.strikes + 1;
+    }
+
+    update(patch);
+  }
+
+  function recordOut() {
+    if (!state) return;
+    const patch = { outs: state.outs >= 2 ? 2 : state.outs + 1 };
+    if (state.outs >= 2 && confirm("That is the third out. End this half inning?")) {
+      Object.assign(patch, endHalfPatch());
+    }
+    update(patch);
+  }
+
+  function render() {
+    if (!state) return;
+    $all("[data-room-label]").forEach(el => el.textContent = room);
+    $all("[data-away-name]").forEach(el => el.textContent = state.awayName);
+    $all("[data-home-name]").forEach(el => el.textContent = state.homeName);
+    $all("[data-away-score]").forEach(el => el.textContent = state.awayScore);
+    $all("[data-home-score]").forEach(el => el.textContent = state.homeScore);
+    $all("[data-inning]").forEach(el => el.textContent = state.inning);
+    $all("[data-half]").forEach(el => el.textContent = state.half);
+    $all("[data-balls]").forEach(el => el.textContent = state.balls);
+    $all("[data-strikes]").forEach(el => el.textContent = state.strikes);
+    $all("[data-outs]").forEach(el => el.textContent = state.outs);
+    $all("[data-away-pitch-count]").forEach(el => el.textContent = state.awayPitchCount);
+    $all("[data-home-pitch-count]").forEach(el => el.textContent = state.homePitchCount);
+    $all("[data-half-action]").forEach(el => el.textContent = `${state.half} (End Half)`);
+    $all("[data-away-input]").forEach(el => { if (document.activeElement !== el) el.value = state.awayName; });
+    $all("[data-home-input]").forEach(el => { if (document.activeElement !== el) el.value = state.homeName; });
+    $all("[data-room-input]").forEach(el => { if (document.activeElement !== el) el.value = room; });
+  }
+
+  document.addEventListener("click", event => {
+    const adjust = event.target.closest("[data-adjust]");
+    const pitch = event.target.closest("[data-pitch]");
+
+    if (adjust && state) {
+      const [key, delta] = adjust.dataset.adjust.split(":");
+      update({ [key]: Number(state[key]) + Number(delta) });
+    }
+    if (pitch && state) recordPitch(pitch.dataset.pitch);
+    if (event.target.closest("[data-out]") && state) recordOut();
+    if (event.target.closest("[data-end-half]") && state) update(endHalfPatch());
+    if (event.target.closest("[data-clear-count]")) update({ balls: 0, strikes: 0 });
+    const clearPitch = event.target.closest("[data-clear-pitch]");
+    if (clearPitch) update({ [clearPitch.dataset.clearPitch]: 0 });
+    if (event.target.closest("[data-reset-game]") && confirm("Reset the whole scoreboard?")) update({ reset: true });
+    if (event.target.closest("[data-join]")) {
+      const input = document.querySelector("[data-room-input]");
+      room = cleanRoom(input.value);
+      localStorage.setItem("scoreboard-room", room);
+      history.replaceState(null, "", `${location.pathname}?room=${encodeURIComponent(room)}`);
+      connect();
+    }
+  });
+
+  document.addEventListener("change", event => {
+    if (!state) return;
+    if (event.target.matches("[data-away-input]")) update({ awayName: event.target.value });
+    if (event.target.matches("[data-home-input]")) update({ homeName: event.target.value });
+  });
+
+  localStorage.setItem("scoreboard-room", room);
+  connect();
+})();
+</script>

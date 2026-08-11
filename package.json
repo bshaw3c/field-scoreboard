@@ -1,0 +1,12 @@
+{
+  "name": "field-scoreboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Realtime phone-controlled baseball/softball scoreboard.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
