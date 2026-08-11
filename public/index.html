@@ -134,16 +134,18 @@
     --blue: #6bbcff;
   }
   * { box-sizing: border-box; }
+  html { min-height: 100%; }
   body {
     margin: 0;
-    min-height: 100vh;
+    min-height: 100dvh;
     background: #05070b;
     color: var(--ink);
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    overflow-x: hidden;
   }
   button, input { font: inherit; }
   button {
-    min-height: 52px;
+    min-height: 54px;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: #263241;
@@ -152,47 +154,66 @@
     touch-action: manipulation;
   }
   .display-view, .control-view { display: none; }
-  body[data-mode="display"] .display-view,
+  body[data-mode="display"] .display-view { display: flex; }
   body[data-mode="control"] .control-view { display: block; }
 
+  .display-view {
+    min-height: 100dvh;
+    flex-direction: column;
+  }
   .top-strip {
     display: flex;
     justify-content: space-between;
     gap: 10px;
-    padding: 12px;
+    padding: 10px 12px;
+    flex: 0 0 auto;
   }
   .room-pill, .live-pill {
     border: 1px solid var(--line);
     border-radius: 8px;
-    padding: 8px 12px;
+    padding: 7px 10px;
     color: var(--muted);
-    font-size: clamp(13px, 2vw, 18px);
+    font-size: 14px;
     font-weight: 900;
     letter-spacing: 0;
+    white-space: nowrap;
   }
   .live-pill.is-live { color: #06140d; background: var(--green); border-color: var(--green); }
   .live-pill.is-offline { color: #180606; background: var(--red); border-color: var(--red); }
 
   .board {
-    width: min(100vw, 1180px);
+    --team-name-size: 88px;
+    --team-score-size: 142px;
+    --team-row-min: 148px;
+    --score-col: 210px;
+    --info-min: 92px;
+    --info-value-size: 58px;
+    --label-size: 16px;
+    --board-gap: 12px;
+    width: 100%;
+    max-width: 1180px;
     margin: 0 auto;
-    padding: clamp(10px, 2.4vw, 28px);
+    padding: 8px 14px 14px;
+    flex: 1 1 auto;
+    display: grid;
+    align-content: center;
+    gap: var(--board-gap);
   }
   .team-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(120px, 24vw);
+    grid-template-columns: minmax(0, 1fr) minmax(116px, var(--score-col));
     align-items: center;
-    min-height: clamp(120px, 25vh, 250px);
+    min-height: var(--team-row-min);
     border: 2px solid var(--line);
     border-radius: 8px;
     overflow: hidden;
     background: var(--panel);
   }
-  .team-row + .team-row { margin-top: 12px; }
   .team-row.home { border-color: rgba(107,188,255,.48); }
   .team-name {
-    padding: 12px 24px;
-    font-size: clamp(48px, 12vw, 152px);
+    min-width: 0;
+    padding: 10px 20px;
+    font-size: var(--team-name-size);
     line-height: .9;
     font-weight: 950;
     white-space: nowrap;
@@ -205,7 +226,7 @@
     place-items: center;
     background: #0b111b;
     color: var(--amber);
-    font-size: clamp(76px, 20vw, 230px);
+    font-size: var(--team-score-size);
     line-height: 1;
     font-weight: 1000;
     font-variant-numeric: tabular-nums;
@@ -213,12 +234,11 @@
   .game-line, .count-line, .pitch-line {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-top: 12px;
+    gap: var(--board-gap);
   }
   .count-line { grid-template-columns: repeat(3, 1fr); }
   .game-line > div, .count-line > div, .pitch-line > div {
-    min-height: clamp(72px, 13vh, 140px);
+    min-height: var(--info-min);
     display: grid;
     place-items: center;
     border: 2px solid var(--line);
@@ -227,12 +247,13 @@
   }
   .label, .count-line span {
     color: var(--muted);
-    font-size: clamp(16px, 3vw, 28px);
+    font-size: var(--label-size);
     font-weight: 900;
+    text-align: center;
   }
   .game-line strong, .count-line strong, .pitch-line strong {
     color: var(--ink);
-    font-size: clamp(42px, 10vw, 104px);
+    font-size: var(--info-value-size);
     line-height: .9;
     font-weight: 1000;
   }
@@ -243,7 +264,7 @@
   .pitch-line strong { color: var(--blue); }
 
   .control-view {
-    max-width: 720px;
+    width: min(100%, 840px);
     margin: 0 auto;
     padding: 12px;
   }
@@ -265,7 +286,7 @@
   }
   .setup-panel {
     display: grid;
-    grid-template-columns: 1fr 96px;
+    grid-template-columns: minmax(0, 1fr) 96px;
     gap: 10px;
     align-items: end;
   }
@@ -290,7 +311,7 @@
   .team-input { margin: 0 0 10px; }
   .score-edit {
     display: grid;
-    grid-template-columns: 60px 1fr 60px;
+    grid-template-columns: 58px minmax(0, 1fr) 58px;
     align-items: center;
     gap: 8px;
   }
@@ -303,7 +324,7 @@
   }
   .inning-controls {
     display: grid;
-    grid-template-columns: 60px 1fr 60px 96px;
+    grid-template-columns: 58px minmax(74px, 1fr) 58px minmax(132px, 1.15fr);
     gap: 8px;
     align-items: center;
   }
@@ -338,6 +359,183 @@
     font-size: 14px;
   }
   .danger { background: #4b1818; }
+
+  @media (min-width: 900px) {
+    .control-view {
+      padding: 18px;
+    }
+    .control-header h1 {
+      font-size: 30px;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .board {
+      --team-name-size: 56px;
+      --team-score-size: 94px;
+      --team-row-min: 108px;
+      --score-col: 150px;
+      --info-min: 76px;
+      --info-value-size: 42px;
+      --label-size: 13px;
+      --board-gap: 9px;
+      padding: 6px 10px 10px;
+    }
+    .team-name {
+      padding: 8px 14px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .top-strip {
+      padding: 8px;
+    }
+    .room-pill, .live-pill {
+      font-size: 12px;
+      padding: 6px 8px;
+    }
+    .board {
+      --team-name-size: 38px;
+      --team-score-size: 70px;
+      --team-row-min: 82px;
+      --score-col: 104px;
+      --info-min: 58px;
+      --info-value-size: 32px;
+      --label-size: 11px;
+      --board-gap: 7px;
+      align-content: start;
+      padding: 4px 8px 8px;
+    }
+    .team-name {
+      padding: 6px 10px;
+    }
+    .count-line > div {
+      gap: 8px;
+    }
+    .control-view {
+      padding: 8px;
+    }
+    .control-header {
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .control-header h1 {
+      font-size: 20px;
+    }
+    .setup-panel, .score-controls article, .inning-controls, .count-controls, .pitch-controls article, .quick-actions {
+      padding: 8px;
+      margin-top: 8px;
+    }
+    button {
+      min-height: 50px;
+    }
+    input {
+      min-height: 44px;
+    }
+    .score-edit {
+      grid-template-columns: 52px minmax(0, 1fr) 52px;
+    }
+    .score-edit strong {
+      font-size: 48px;
+    }
+    .inning-controls {
+      grid-template-columns: 52px minmax(64px, 1fr) 52px;
+    }
+    .inning-controls .wide {
+      grid-column: 1 / -1;
+    }
+    .inning-controls strong {
+      font-size: 36px;
+    }
+    .pitch-controls strong {
+      font-size: 42px;
+    }
+  }
+
+  @media (max-width: 390px) {
+    .board {
+      --team-name-size: 32px;
+      --team-score-size: 58px;
+      --team-row-min: 72px;
+      --score-col: 88px;
+      --info-min: 52px;
+      --info-value-size: 28px;
+      --label-size: 10px;
+    }
+    .pitch-line {
+      grid-template-columns: 1fr;
+    }
+    .pitch-line > div {
+      min-height: 48px;
+      grid-template-columns: 1fr auto;
+      padding: 0 12px;
+    }
+  }
+
+  @media (orientation: landscape) and (max-height: 520px) {
+    .top-strip {
+      padding: 6px 8px;
+    }
+    .board {
+      --team-name-size: 34px;
+      --team-score-size: 56px;
+      --team-row-min: 58px;
+      --score-col: 92px;
+      --info-min: 46px;
+      --info-value-size: 26px;
+      --label-size: 10px;
+      --board-gap: 6px;
+      max-width: none;
+      align-content: start;
+      padding: 2px 8px 8px;
+    }
+    .board {
+      grid-template-columns: 1.35fr 1fr;
+    }
+    .team-row {
+      grid-column: 1;
+    }
+    .game-line, .count-line, .pitch-line {
+      grid-column: 2;
+    }
+    .pitch-line {
+      grid-template-columns: 1fr;
+    }
+    .control-view {
+      width: 100%;
+      max-width: none;
+      padding: 8px;
+    }
+    .control-header {
+      margin-bottom: 6px;
+    }
+    .setup-panel, .score-controls article, .inning-controls, .count-controls, .pitch-controls article, .quick-actions {
+      padding: 7px;
+      margin-top: 7px;
+    }
+    .score-controls, .pitch-controls {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .count-controls {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .quick-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    button {
+      min-height: 44px;
+    }
+    input {
+      min-height: 40px;
+    }
+    .score-edit strong {
+      font-size: 38px;
+    }
+    .pitch-controls strong {
+      font-size: 34px;
+    }
+  }
+
   @media (max-width: 560px) {
     .score-controls { grid-template-columns: 1fr; }
     .count-controls { grid-template-columns: repeat(2, 1fr); }

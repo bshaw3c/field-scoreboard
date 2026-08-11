@@ -2,6 +2,8 @@
 
 Phone-controlled baseball/softball scoreboard with a display page for an iPad.
 
+The display and controller layouts are responsive for phone portrait, phone landscape, tablet, and desktop screens.
+
 ## Local Preview
 
 Start the app:
