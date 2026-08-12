@@ -139,11 +139,11 @@
     </header>
 
     <main class="hub-grid" aria-label="All field scores">
-      <article class="field-card" data-hub-card="FIELD1"></article>
-      <article class="field-card" data-hub-card="FIELD2"></article>
-      <article class="field-card" data-hub-card="FIELD3"></article>
-      <article class="field-card" data-hub-card="FIELD4"></article>
-      <article class="field-card" data-hub-card="FIELD5"></article>
+      <a class="field-card" data-hub-card="FIELD1" href="/display?room=FIELD1" aria-label="Open Field 1 full scoreboard"></a>
+      <a class="field-card" data-hub-card="FIELD2" href="/display?room=FIELD2" aria-label="Open Field 2 full scoreboard"></a>
+      <a class="field-card" data-hub-card="FIELD3" href="/display?room=FIELD3" aria-label="Open Field 3 full scoreboard"></a>
+      <a class="field-card" data-hub-card="FIELD4" href="/display?room=FIELD4" aria-label="Open Field 4 full scoreboard"></a>
+      <a class="field-card" data-hub-card="FIELD5" href="/display?room=FIELD5" aria-label="Open Field 5 full scoreboard"></a>
     </main>
   </section>
 </div>
@@ -420,11 +420,24 @@
     margin: 0 auto;
   }
   .field-card {
+    display: block;
     min-height: 190px;
     border: 2px solid var(--line);
     border-radius: 8px;
     background: var(--panel);
+    color: inherit;
     overflow: hidden;
+    text-decoration: none;
+    transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+  }
+  .field-card:hover,
+  .field-card:focus-visible {
+    border-color: rgba(107,188,255,.72);
+    box-shadow: 0 0 0 3px rgba(107,188,255,.18);
+    outline: none;
+  }
+  .field-card:active {
+    transform: scale(.99);
   }
   .field-title {
     display: flex;
@@ -1008,7 +1021,7 @@
           <div>B<strong>${state.balls}</strong></div>
           <div>S<strong>${state.strikes}</strong></div>
           <div>O<strong>${state.outs}</strong></div>
-          <div class="hub-pitches">G P<strong>${state.awayPitchCount}</strong></div>
+          <div class="hub-pitches">V P<strong>${state.awayPitchCount}</strong></div>
           <div class="hub-pitches">H P<strong>${state.homePitchCount}</strong></div>
         </div>
       `;
