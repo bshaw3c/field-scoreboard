@@ -8,7 +8,7 @@ const REDIS_URL = process.env.REDIS_URL || process.env.RENDER_KV_URL || "";
 
 const defaultState = () => ({
   homeName: "HOME",
-  awayName: "GUEST",
+  awayName: "VISITOR",
   homeScore: 0,
   awayScore: 0,
   inning: 1,
@@ -116,7 +116,7 @@ async function patchState(room, patch) {
   const state = await getState(room);
 
   if (typeof patch.homeName === "string") state.homeName = patch.homeName.slice(0, 16).toUpperCase() || "HOME";
-  if (typeof patch.awayName === "string") state.awayName = patch.awayName.slice(0, 16).toUpperCase() || "GUEST";
+  if (typeof patch.awayName === "string") state.awayName = patch.awayName.slice(0, 16).toUpperCase() || "VISITOR";
   if (patch.homeScore !== undefined) state.homeScore = clamp(patch.homeScore, 0, 99);
   if (patch.awayScore !== undefined) state.awayScore = clamp(patch.awayScore, 0, 99);
   if (patch.inning !== undefined) state.inning = clamp(patch.inning, 1, 99);
