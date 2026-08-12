@@ -36,7 +36,7 @@ http://localhost:4173/hub
 
 - Ball, Strike, and Foul automatically add one pitch to the defensive pitcher.
 - Top inning means the home pitcher gets the pitch count.
-- Bottom inning means the guest pitcher gets the pitch count.
+- Bottom inning means the visitor pitcher gets the pitch count.
 - Ball 4 clears balls and strikes.
 - Strike 3 clears balls and strikes, adds an out, and asks whether to end the half inning when it is the third out.
 - Foul adds a pitch; with two strikes, the strike count stays at two.
