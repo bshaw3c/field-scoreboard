@@ -12,6 +12,7 @@
   <section class="display-view" data-view="display">
     <div class="top-strip">
       <div class="room-pill">ROOM <span data-room-label>FIELD1</span></div>
+      <a class="nav-pill" href="/hub">HUB</a>
       <div class="live-pill" data-live>CONNECTING</div>
     </div>
 
@@ -61,7 +62,10 @@
         <p>Room <strong data-room-label>FIELD1</strong></p>
         <h1>Scoreboard Control</h1>
       </div>
-      <div class="live-pill" data-live>CONNECTING</div>
+      <div class="header-actions">
+        <a class="nav-pill" href="/hub">HUB</a>
+        <div class="live-pill" data-live>CONNECTING</div>
+      </div>
     </header>
 
     <div class="setup-panel">
@@ -197,7 +201,7 @@
     padding: 10px 12px;
     flex: 0 0 auto;
   }
-  .room-pill, .live-pill {
+  .room-pill, .live-pill, .nav-pill {
     border: 1px solid var(--line);
     border-radius: 8px;
     padding: 7px 10px;
@@ -206,6 +210,16 @@
     font-weight: 900;
     letter-spacing: 0;
     white-space: nowrap;
+  }
+  .nav-pill {
+    color: var(--ink);
+    text-decoration: none;
+    background: #172235;
+  }
+  .nav-pill:hover,
+  .nav-pill:focus-visible {
+    border-color: rgba(107,188,255,.72);
+    outline: none;
   }
   .live-pill.is-live { color: #06140d; background: var(--green); border-color: var(--green); }
   .live-pill.is-offline { color: #180606; background: var(--red); border-color: var(--red); }
@@ -306,6 +320,11 @@
   }
   .control-header p { margin: 0 0 2px; color: var(--muted); font-weight: 800; }
   .control-header h1 { margin: 0; font-size: 26px; }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
   .setup-panel, .score-controls article, .inning-controls, .count-controls, .pitch-controls article, .quick-actions {
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -537,7 +556,7 @@
     .top-strip {
       padding: 8px;
     }
-    .room-pill, .live-pill {
+    .room-pill, .live-pill, .nav-pill {
       font-size: 12px;
       padding: 6px 8px;
     }
@@ -767,9 +786,13 @@
       font-size: 15px;
       line-height: 1.1;
     }
-    .control-header .live-pill {
+    .control-header .live-pill,
+    .control-header .nav-pill {
       padding: 5px 7px;
       font-size: 11px;
+    }
+    .header-actions {
+      gap: 5px;
     }
     .setup-panel, .score-controls article, .inning-controls, .count-controls, .pitch-controls article, .quick-actions {
       padding: 5px;
