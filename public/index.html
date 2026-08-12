@@ -17,7 +17,7 @@
 
     <main class="board" aria-label="Scoreboard display">
       <div class="team-row">
-        <div class="team-name" data-away-name>GUEST</div>
+        <div class="team-name" data-away-name>VISITOR</div>
         <div class="team-score" data-away-score>0</div>
       </div>
       <div class="team-row home">
@@ -44,7 +44,7 @@
 
       <div class="pitch-line">
         <div>
-          <span class="label">GUEST PITCHES</span>
+          <span class="label">VISITOR PITCHES</span>
           <strong data-away-pitch-count>0</strong>
         </div>
         <div>
@@ -71,7 +71,7 @@
 
     <div class="score-controls">
       <article>
-        <input class="team-input" data-away-input maxlength="16" aria-label="Guest team name">
+        <input class="team-input" data-away-input maxlength="16" aria-label="Visitor team name">
         <div class="score-edit">
           <button type="button" data-adjust="awayScore:-1">-</button>
           <strong data-away-score>0</strong>
@@ -104,13 +104,13 @@
 
     <div class="pitch-controls">
       <article>
-        <span>Guest Pitcher</span>
+        <span>Visitor Pitcher</span>
         <div class="score-edit">
           <button type="button" data-adjust="awayPitchCount:-1">-</button>
           <strong data-away-pitch-count>0</strong>
           <button type="button" data-adjust="awayPitchCount:1">+</button>
         </div>
-        <button type="button" class="clear-pitch" data-clear-pitch="awayPitchCount">Clear Guest</button>
+        <button type="button" class="clear-pitch" data-clear-pitch="awayPitchCount">Clear Visitor</button>
       </article>
       <article>
         <span>Home Pitcher</span>
