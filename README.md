@@ -32,6 +32,8 @@ Open the five-field hub:
 http://localhost:4173/hub
 ```
 
+Each field on the hub opens that field's full-size display page.
+
 ## Control Flow
 
 - Ball, Strike, and Foul automatically add one pitch to the defensive pitcher.
