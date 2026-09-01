@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Game Tracker</title>
+</head>
+<body>
+<main class="tracker-view" aria-label="Personal game tracker">
+  <header class="tracker-header">
+    <div>
+      <p>Personal</p>
+      <h1>Game Tracker</h1>
+    </div>
+    <button type="button" data-toggle-setup>Setup</button>
+  </header>
+
+  <section class="setup-panel" data-setup-panel>
+    <label>Batting order
+      <textarea data-lineup rows="9" spellcheck="false" placeholder="1. Player name&#10;2. Player name&#10;3. Player name"></textarea>
+    </label>
+    <label>Pitchers
+      <textarea data-pitchers rows="4" spellcheck="false" placeholder="Pitcher name&#10;Pitcher name"></textarea>
+    </label>
+    <div class="setup-actions">
+      <button type="button" data-save-setup>Save Names</button>
+      <button type="button" class="danger" data-reset>Reset Tracker</button>
+    </div>
+  </section>
+
+  <section class="panel at-bat">
+    <span>At Bat</span>
+    <strong data-up>Player 1</strong>
+    <div class="subline">
+      <span>#<b data-slot>1</b></span>
+      <span>PA Pitches <b data-pa-pitches>0</b></span>
+      <span>Total <b data-batter-total>0</b></span>
+    </div>
+  </section>
+
+  <section class="next-row">
+    <article class="panel">
+      <span>On Deck</span>
+      <strong data-ondeck>Player 2</strong>
+    </article>
+    <article class="panel">
+      <span>In Hole</span>
+      <strong data-inhole>Player 3</strong>
+    </article>
+  </section>
+
+  <section class="count-row">
+    <article class="panel count-card">
+      <span>Balls</span>
+      <strong data-balls>0</strong>
+    </article>
+    <article class="panel count-card">
+      <span>Strikes</span>
+      <strong data-strikes>0</strong>
+    </article>
+  </section>
+
+  <section class="pitch-grid">
+    <button type="button" data-pitch="ball"><span>Ball</span><strong data-balls>0</strong></button>
+    <button type="button" data-pitch="strike"><span>Strike</span><strong data-strikes>0</strong></button>
+    <button type="button" data-pitch="foul"><span>Foul</span><strong>+</strong></button>
+    <button type="button" data-pitch="inplay"><span>In Play</span><strong>GO</strong></button>
+  </section>
+
+  <section class="panel pitcher-card">
+    <label>Pitcher
+      <select data-active-pitcher></select>
+    </label>
+    <div class="pitcher-line">
+      <button type="button" data-pitcher-adjust="-1">-</button>
+      <div>
+        <span>Pitch Count</span>
+        <strong data-pitcher-count>0</strong>
+      </div>
+      <button type="button" data-pitcher-adjust="1">+</button>
+    </div>
+  </section>
+
+  <section class="correction-grid">
+    <button type="button" data-prev>Prev Batter</button>
+    <button type="button" data-next>Next Batter</button>
+    <button type="button" data-clear-count>Clear Count</button>
+    <button type="button" data-clear-pa>Clear PA</button>
+  </section>
+</main>
+
+<style>
+  :root {
+    color-scheme: dark;
+    --ink: #f9fafb;
+    --muted: #b8c0cc;
+    --line: rgba(255,255,255,.18);
+    --panel: #111827;
+    --panel-2: #263241;
+    --amber: #ffcf5c;
+    --blue: #6bbcff;
+    --red: #5a1b1b;
+  }
+  * { box-sizing: border-box; }
+  html { min-height: 100%; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: #05070b;
+    color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    overflow-x: hidden;
+  }
+  button, textarea, select {
+    font: inherit;
+  }
+  button {
+    min-height: 52px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-2);
+    color: var(--ink);
+    font-weight: 900;
+    touch-action: manipulation;
+  }
+  .tracker-view {
+    width: min(100%, 480px);
+    min-height: 100dvh;
+    margin: 0 auto;
+    padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    display: grid;
+    align-content: start;
+    gap: 9px;
+  }
+  .tracker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .tracker-header p {
+    margin: 0 0 2px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 900;
+  }
+  .tracker-header h1 {
+    margin: 0;
+    font-size: 27px;
+    line-height: 1;
+  }
+  .tracker-header button {
+    min-height: 42px;
+    padding: 0 14px;
+  }
+  .panel,
+  .setup-panel,
+  .pitch-grid,
+  .correction-grid {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    padding: 10px;
+  }
+  .setup-panel {
+    display: none;
+    gap: 10px;
+  }
+  .setup-panel.is-open {
+    display: grid;
+  }
+  label {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 900;
+  }
+  textarea, select {
+    width: 100%;
+    margin-top: 5px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #090d14;
+    color: var(--ink);
+    font-weight: 800;
+  }
+  textarea {
+    min-height: 112px;
+    padding: 10px;
+    resize: vertical;
+  }
+  select {
+    min-height: 44px;
+    padding: 0 10px;
+  }
+  .setup-actions,
+  .next-row,
+  .count-row,
+  .pitch-grid,
+  .correction-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .danger {
+    background: var(--red);
+  }
+  .panel span,
+  .pitch-grid span,
+  .pitcher-line span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  .at-bat {
+    min-height: 104px;
+    display: grid;
+    align-content: center;
+  }
+  .at-bat > strong {
+    min-width: 0;
+    margin-top: 3px;
+    font-size: 38px;
+    line-height: .95;
+    font-weight: 1000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .subline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 900;
+  }
+  .subline b {
+    color: var(--blue);
+    font-variant-numeric: tabular-nums;
+  }
+  .next-row .panel {
+    min-width: 0;
+  }
+  .next-row strong {
+    display: block;
+    min-width: 0;
+    margin-top: 4px;
+    font-size: 22px;
+    line-height: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .count-card {
+    display: grid;
+    place-items: center;
+    min-height: 74px;
+  }
+  .count-card strong {
+    color: var(--amber);
+    font-size: 50px;
+    line-height: .9;
+    font-weight: 1000;
+    font-variant-numeric: tabular-nums;
+  }
+  .pitch-grid button {
+    min-height: 68px;
+  }
+  .pitch-grid span {
+    display: block;
+    font-size: 13px;
+  }
+  .pitch-grid strong {
+    display: block;
+    color: var(--ink);
+    font-size: 30px;
+    line-height: 1;
+    font-weight: 1000;
+  }
+  .pitcher-card {
+    display: grid;
+    gap: 9px;
+  }
+  .pitcher-line {
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr) 54px;
+    gap: 8px;
+    align-items: center;
+  }
+  .pitcher-line > div {
+    text-align: center;
+  }
+  .pitcher-line strong {
+    display: block;
+    color: var(--blue);
+    font-size: 42px;
+    line-height: .95;
+    font-weight: 1000;
+    font-variant-numeric: tabular-nums;
+  }
+  .correction-grid button {
+    min-height: 46px;
+    font-size: 13px;
+  }
+
+  @media (max-width: 430px) {
+    .tracker-view {
+      padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+      gap: 8px;
+    }
+    .tracker-header h1 {
+      font-size: 24px;
+    }
+    .panel,
+    .setup-panel,
+    .pitch-grid,
+    .correction-grid {
+      padding: 8px;
+    }
+    .at-bat > strong {
+      font-size: 34px;
+    }
+    .count-card strong {
+      font-size: 48px;
+    }
+    .pitcher-line strong {
+      font-size: 40px;
+    }
+  }
+</style>
+
+<script>
+(() => {
+  const storageKey = "personal-game-tracker";
+  const $all = selector => Array.from(document.querySelectorAll(selector));
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, Number(value) || 0));
+  let tracker = loadTracker();
+
+  function defaultTracker() {
+    return {
+      lineup: Array.from({ length: 9 }, (_, index) => ({
+        name: `Player ${index + 1}`,
+        totalPitches: 0
+      })),
+      pitchers: [{ name: "Pitcher 1", pitches: 0 }],
+      batterIndex: 0,
+      activePitcherIndex: 0,
+      balls: 0,
+      strikes: 0,
+      paPitches: 0,
+      setupOpen: false
+    };
+  }
+
+  function loadTracker() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+      if (!saved) return defaultTracker();
+      const fallback = defaultTracker();
+      const lineup = Array.isArray(saved.lineup) && saved.lineup.length
+        ? saved.lineup.map((player, index) => ({
+          name: String(player.name || `Player ${index + 1}`).slice(0, 28),
+          totalPitches: clamp(player.totalPitches, 0, 999)
+        }))
+        : fallback.lineup;
+      const pitchers = Array.isArray(saved.pitchers) && saved.pitchers.length
+        ? saved.pitchers.map((pitcher, index) => ({
+          name: String(pitcher.name || `Pitcher ${index + 1}`).slice(0, 28),
+          pitches: clamp(pitcher.pitches, 0, 999)
+        }))
+        : fallback.pitchers;
+      return {
+        lineup,
+        pitchers,
+        batterIndex: clamp(saved.batterIndex, 0, lineup.length - 1),
+        activePitcherIndex: clamp(saved.activePitcherIndex, 0, pitchers.length - 1),
+        balls: clamp(saved.balls, 0, 3),
+        strikes: clamp(saved.strikes, 0, 2),
+        paPitches: clamp(saved.paPitches, 0, 99),
+        setupOpen: Boolean(saved.setupOpen)
+      };
+    } catch {
+      return defaultTracker();
+    }
+  }
+
+  function saveTracker() {
+    localStorage.setItem(storageKey, JSON.stringify(tracker));
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#39;"
+    })[char]);
+  }
+
+  function parseNames(value, fallbackLabel, minimum = 1) {
+    const names = String(value || "")
+      .split(/\n/)
+      .map(line => line.replace(/^\s*\d+[\).\-\s]+/, "").trim())
+      .filter(Boolean)
+      .map(name => name.slice(0, 28));
+    while (names.length < minimum) names.push(`${fallbackLabel} ${names.length + 1}`);
+    return names;
+  }
+
+  function activeBatter() {
+    return tracker.lineup[tracker.batterIndex] || tracker.lineup[0];
+  }
+
+  function nextBatterOffset(offset) {
+    if (!tracker.lineup.length) return null;
+    const index = (tracker.batterIndex + offset + tracker.lineup.length) % tracker.lineup.length;
+    return tracker.lineup[index];
+  }
+
+  function activePitcher() {
+    return tracker.pitchers[tracker.activePitcherIndex] || tracker.pitchers[0];
+  }
+
+  function render() {
+    const batter = activeBatter();
+    const pitcher = activePitcher();
+    document.querySelector("[data-setup-panel]").classList.toggle("is-open", tracker.setupOpen);
+    $all("[data-lineup]").forEach(el => {
+      if (document.activeElement !== el) el.value = tracker.lineup.map((player, index) => `${index + 1}. ${player.name}`).join("\n");
+    });
+    $all("[data-pitchers]").forEach(el => {
+      if (document.activeElement !== el) el.value = tracker.pitchers.map(p => p.name).join("\n");
+    });
+    $all("[data-up]").forEach(el => el.textContent = batter.name);
+    $all("[data-slot]").forEach(el => el.textContent = tracker.batterIndex + 1);
+    $all("[data-ondeck]").forEach(el => el.textContent = nextBatterOffset(1)?.name || "");
+    $all("[data-inhole]").forEach(el => el.textContent = nextBatterOffset(2)?.name || "");
+    $all("[data-balls]").forEach(el => el.textContent = tracker.balls);
+    $all("[data-strikes]").forEach(el => el.textContent = tracker.strikes);
+    $all("[data-pa-pitches]").forEach(el => el.textContent = tracker.paPitches);
+    $all("[data-batter-total]").forEach(el => el.textContent = batter.totalPitches);
+    $all("[data-pitcher-count]").forEach(el => el.textContent = pitcher.pitches);
+    $all("[data-active-pitcher]").forEach(select => {
+      const previous = String(tracker.activePitcherIndex);
+      select.innerHTML = tracker.pitchers.map((item, index) => `<option value="${index}">${escapeHtml(item.name)}</option>`).join("");
+      select.value = previous;
+    });
+  }
+
+  function commit() {
+    saveTracker();
+    render();
+  }
+
+  function advanceBatter(step = 1) {
+    tracker.batterIndex = (tracker.batterIndex + step + tracker.lineup.length) % tracker.lineup.length;
+    tracker.balls = 0;
+    tracker.strikes = 0;
+    tracker.paPitches = 0;
+    commit();
+  }
+
+  function addPitch(kind) {
+    const batter = activeBatter();
+    const pitcher = activePitcher();
+    batter.totalPitches = clamp(batter.totalPitches + 1, 0, 999);
+    pitcher.pitches = clamp(pitcher.pitches + 1, 0, 999);
+    tracker.paPitches = clamp(tracker.paPitches + 1, 0, 99);
+
+    if (kind === "ball") {
+      tracker.balls += 1;
+      if (tracker.balls >= 4) return advanceBatter(1);
+    }
+    if (kind === "strike") {
+      tracker.strikes += 1;
+      if (tracker.strikes >= 3) return advanceBatter(1);
+    }
+    if (kind === "foul") {
+      tracker.strikes = tracker.strikes >= 2 ? 2 : tracker.strikes + 1;
+    }
+    if (kind === "inplay") {
+      return advanceBatter(1);
+    }
+
+    tracker.balls = clamp(tracker.balls, 0, 3);
+    tracker.strikes = clamp(tracker.strikes, 0, 2);
+    commit();
+  }
+
+  document.addEventListener("click", event => {
+    const pitch = event.target.closest("[data-pitch]");
+    const pitcherAdjust = event.target.closest("[data-pitcher-adjust]");
+
+    if (event.target.closest("[data-toggle-setup]")) {
+      tracker.setupOpen = !tracker.setupOpen;
+      commit();
+    }
+    if (event.target.closest("[data-save-setup]")) {
+      const oldLineup = tracker.lineup;
+      const oldPitchers = tracker.pitchers;
+      tracker.lineup = parseNames(document.querySelector("[data-lineup]").value, "Player", 1).map((name, index) => ({
+        name,
+        totalPitches: oldLineup[index]?.totalPitches || 0
+      }));
+      tracker.pitchers = parseNames(document.querySelector("[data-pitchers]").value, "Pitcher", 1).map((name, index) => ({
+        name,
+        pitches: oldPitchers[index]?.pitches || 0
+      }));
+      tracker.batterIndex = clamp(tracker.batterIndex, 0, tracker.lineup.length - 1);
+      tracker.activePitcherIndex = clamp(tracker.activePitcherIndex, 0, tracker.pitchers.length - 1);
+      tracker.setupOpen = false;
+      commit();
+    }
+    if (pitch) addPitch(pitch.dataset.pitch);
+    if (event.target.closest("[data-next]")) advanceBatter(1);
+    if (event.target.closest("[data-prev]")) advanceBatter(-1);
+    if (event.target.closest("[data-clear-count]")) {
+      tracker.balls = 0;
+      tracker.strikes = 0;
+      commit();
+    }
+    if (event.target.closest("[data-clear-pa]")) {
+      tracker.paPitches = 0;
+      commit();
+    }
+    if (pitcherAdjust) {
+      const pitcher = activePitcher();
+      pitcher.pitches = clamp(pitcher.pitches + Number(pitcherAdjust.dataset.pitcherAdjust), 0, 999);
+      commit();
+    }
+    if (event.target.closest("[data-reset]") && confirm("Reset the personal tracker?")) {
+      tracker = defaultTracker();
+      commit();
+    }
+  });
+
+  document.addEventListener("change", event => {
+    if (event.target.matches("[data-active-pitcher]")) {
+      tracker.activePitcherIndex = clamp(event.target.value, 0, tracker.pitchers.length - 1);
+      commit();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
