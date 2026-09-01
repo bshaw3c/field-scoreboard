@@ -18,6 +18,14 @@
   </header>
 
   <section class="setup-panel" data-setup-panel>
+    <div class="team-name-grid">
+      <label>Visitor team
+        <input data-visitor-name maxlength="16" autocomplete="off">
+      </label>
+      <label>Home team
+        <input data-home-name maxlength="16" autocomplete="off">
+      </label>
+    </div>
     <label>Batting order
       <textarea data-lineup rows="9" spellcheck="false" placeholder="1. Player name&#10;2. Player name&#10;3. Player name"></textarea>
     </label>
@@ -32,7 +40,7 @@
 
   <section class="score-row">
     <article class="panel score-card">
-      <span>Visitor</span>
+      <span data-visitor-label>Visitor</span>
       <div>
         <button type="button" data-score-adjust="visitorScore:-1">-</button>
         <strong data-visitor-score>0</strong>
@@ -40,7 +48,7 @@
       </div>
     </article>
     <article class="panel score-card">
-      <span>Home</span>
+      <span data-home-label>Home</span>
       <div>
         <button type="button" data-score-adjust="homeScore:-1">-</button>
         <strong data-home-score>0</strong>
@@ -138,7 +146,7 @@
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     overflow-x: hidden;
   }
-  button, textarea, select {
+  button, input, textarea, select {
     font: inherit;
   }
   button {
@@ -201,7 +209,7 @@
     font-size: 13px;
     font-weight: 900;
   }
-  textarea, select {
+  input, textarea, select {
     width: 100%;
     margin-top: 5px;
     border: 1px solid var(--line);
@@ -209,6 +217,10 @@
     background: #090d14;
     color: var(--ink);
     font-weight: 800;
+  }
+  input {
+    min-height: 44px;
+    padding: 0 10px;
   }
   textarea {
     min-height: 112px;
@@ -220,6 +232,7 @@
     padding: 0 10px;
   }
   .setup-actions,
+  .team-name-grid,
   .score-row,
   .next-row,
   .pitch-grid,
@@ -409,6 +422,8 @@
       pitchers: [{ name: "Pitcher 1", pitches: 0 }],
       batterIndex: 0,
       activePitcherIndex: 0,
+      visitorName: "Visitor",
+      homeName: "Home",
       visitorScore: 0,
       homeScore: 0,
       balls: 0,
@@ -441,6 +456,8 @@
         pitchers,
         batterIndex: clamp(saved.batterIndex, 0, lineup.length - 1),
         activePitcherIndex: clamp(saved.activePitcherIndex, 0, pitchers.length - 1),
+        visitorName: cleanTeamName(saved.visitorName, "Visitor"),
+        homeName: cleanTeamName(saved.homeName, "Home"),
         visitorScore: clamp(saved.visitorScore, 0, 99),
         homeScore: clamp(saved.homeScore, 0, 99),
         balls: clamp(saved.balls, 0, 3),
@@ -456,6 +473,10 @@
 
   function saveTracker() {
     localStorage.setItem(storageKey, JSON.stringify(tracker));
+  }
+
+  function cleanTeamName(value, fallback) {
+    return String(value || fallback).trim().slice(0, 16) || fallback;
   }
 
   function escapeHtml(value) {
@@ -502,10 +523,18 @@
     $all("[data-pitchers]").forEach(el => {
       if (document.activeElement !== el) el.value = tracker.pitchers.map(p => p.name).join("\n");
     });
+    $all("[data-visitor-name]").forEach(el => {
+      if (document.activeElement !== el) el.value = tracker.visitorName;
+    });
+    $all("[data-home-name]").forEach(el => {
+      if (document.activeElement !== el) el.value = tracker.homeName;
+    });
     $all("[data-up]").forEach(el => el.textContent = batter.name);
     $all("[data-slot]").forEach(el => el.textContent = tracker.batterIndex + 1);
     $all("[data-ondeck]").forEach(el => el.textContent = nextBatterOffset(1)?.name || "");
     $all("[data-inhole]").forEach(el => el.textContent = nextBatterOffset(2)?.name || "");
+    $all("[data-visitor-label]").forEach(el => el.textContent = tracker.visitorName);
+    $all("[data-home-label]").forEach(el => el.textContent = tracker.homeName);
     $all("[data-visitor-score]").forEach(el => el.textContent = tracker.visitorScore);
     $all("[data-home-score]").forEach(el => el.textContent = tracker.homeScore);
     $all("[data-balls]").forEach(el => el.textContent = tracker.balls);
@@ -574,6 +603,8 @@
     if (event.target.closest("[data-save-setup]")) {
       const oldLineup = tracker.lineup;
       const oldPitchers = tracker.pitchers;
+      tracker.visitorName = cleanTeamName(document.querySelector("[data-visitor-name]").value, "Visitor");
+      tracker.homeName = cleanTeamName(document.querySelector("[data-home-name]").value, "Home");
       tracker.lineup = parseNames(document.querySelector("[data-lineup]").value, "Player", 1).map((name, index) => ({
         name,
         totalPitches: oldLineup[index]?.totalPitches || 0
