@@ -14,7 +14,10 @@
       <p>Personal</p>
       <h1>Rotation Plan</h1>
     </div>
-    <button type="button" data-toggle-setup>Setup</button>
+    <div class="header-actions">
+      <a href="/tracker">Tracker</a>
+      <button type="button" data-toggle-setup>Setup</button>
+    </div>
   </header>
 
   <section class="setup-panel" data-setup>
@@ -69,6 +72,10 @@
   button, textarea {
     font: inherit;
   }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
   button {
     min-height: 48px;
     border: 1px solid var(--line);
@@ -104,9 +111,22 @@
     font-size: 27px;
     line-height: 1;
   }
-  .topbar button {
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .topbar button,
+  .topbar a {
+    display: grid;
+    place-items: center;
     min-height: 42px;
     padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-2);
+    color: var(--ink);
+    font-weight: 900;
   }
   .setup-panel,
   .plan-card,
@@ -205,6 +225,15 @@
     }
     .topbar h1 {
       font-size: 24px;
+    }
+    .header-actions {
+      gap: 6px;
+    }
+    .topbar button,
+    .topbar a {
+      min-height: 40px;
+      padding: 0 10px;
+      font-size: 13px;
     }
     .setup-panel,
     .plan-card,
