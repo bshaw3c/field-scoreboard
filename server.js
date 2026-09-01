@@ -141,6 +141,7 @@ async function patchState(room, patch) {
 function serveStatic(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   let pathname = decodeURIComponent(url.pathname);
+  if (pathname === "/tracker") pathname = "/tracker.html";
   if (pathname === "/" || pathname === "/display" || pathname === "/control" || pathname === "/hub") pathname = "/index.html";
 
   const filePath = path.normalize(path.join(PUBLIC_DIR, pathname));
