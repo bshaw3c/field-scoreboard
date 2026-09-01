@@ -30,6 +30,25 @@
     </div>
   </section>
 
+  <section class="score-row">
+    <article class="panel score-card">
+      <span>Visitor</span>
+      <div>
+        <button type="button" data-score-adjust="visitorScore:-1">-</button>
+        <strong data-visitor-score>0</strong>
+        <button type="button" data-score-adjust="visitorScore:1">+</button>
+      </div>
+    </article>
+    <article class="panel score-card">
+      <span>Home</span>
+      <div>
+        <button type="button" data-score-adjust="homeScore:-1">-</button>
+        <strong data-home-score>0</strong>
+        <button type="button" data-score-adjust="homeScore:1">+</button>
+      </div>
+    </article>
+  </section>
+
   <section class="panel at-bat">
     <span>At Bat</span>
     <strong data-up>Player 1</strong>
@@ -60,6 +79,10 @@
       <span>Strikes</span>
       <strong data-strikes>0</strong>
     </article>
+    <article class="panel count-card">
+      <span>Outs</span>
+      <strong data-outs>0</strong>
+    </article>
   </section>
 
   <section class="pitch-grid">
@@ -67,6 +90,8 @@
     <button type="button" data-pitch="strike"><span>Strike</span><strong data-strikes>0</strong></button>
     <button type="button" data-pitch="foul"><span>Foul</span><strong>+</strong></button>
     <button type="button" data-pitch="inplay"><span>In Play</span><strong>GO</strong></button>
+    <button type="button" data-out-adjust="-1"><span>Out</span><strong>-</strong></button>
+    <button type="button" data-out-adjust="1"><span>Out</span><strong>+</strong></button>
   </section>
 
   <section class="panel pitcher-card">
@@ -195,16 +220,42 @@
     padding: 0 10px;
   }
   .setup-actions,
+  .score-row,
   .next-row,
-  .count-row,
   .pitch-grid,
   .correction-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
+  .count-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
   .danger {
     background: var(--red);
+  }
+  .score-card {
+    display: grid;
+    gap: 6px;
+  }
+  .score-card > div {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+    gap: 6px;
+    align-items: center;
+  }
+  .score-card button {
+    min-height: 38px;
+  }
+  .score-card strong {
+    color: var(--amber);
+    text-align: center;
+    font-size: 34px;
+    line-height: .9;
+    font-weight: 1000;
+    font-variant-numeric: tabular-nums;
   }
   .panel span,
   .pitch-grid span,
@@ -215,7 +266,7 @@
     text-transform: uppercase;
   }
   .at-bat {
-    min-height: 104px;
+    min-height: 96px;
     display: grid;
     align-content: center;
   }
@@ -258,7 +309,7 @@
   .count-card {
     display: grid;
     place-items: center;
-    min-height: 74px;
+    min-height: 64px;
   }
   .count-card strong {
     color: var(--amber);
@@ -268,7 +319,7 @@
     font-variant-numeric: tabular-nums;
   }
   .pitch-grid button {
-    min-height: 68px;
+    min-height: 58px;
   }
   .pitch-grid span {
     display: block;
@@ -303,7 +354,7 @@
     font-variant-numeric: tabular-nums;
   }
   .correction-grid button {
-    min-height: 46px;
+    min-height: 44px;
     font-size: 13px;
   }
 
@@ -322,13 +373,22 @@
       padding: 8px;
     }
     .at-bat > strong {
-      font-size: 34px;
+      font-size: 32px;
     }
     .count-card strong {
-      font-size: 48px;
+      font-size: 38px;
     }
     .pitcher-line strong {
       font-size: 40px;
+    }
+    .pitch-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .pitch-grid span {
+      font-size: 11px;
+    }
+    .pitch-grid strong {
+      font-size: 26px;
     }
   }
 </style>
@@ -349,8 +409,11 @@
       pitchers: [{ name: "Pitcher 1", pitches: 0 }],
       batterIndex: 0,
       activePitcherIndex: 0,
+      visitorScore: 0,
+      homeScore: 0,
       balls: 0,
       strikes: 0,
+      outs: 0,
       paPitches: 0,
       setupOpen: false
     };
@@ -378,8 +441,11 @@
         pitchers,
         batterIndex: clamp(saved.batterIndex, 0, lineup.length - 1),
         activePitcherIndex: clamp(saved.activePitcherIndex, 0, pitchers.length - 1),
+        visitorScore: clamp(saved.visitorScore, 0, 99),
+        homeScore: clamp(saved.homeScore, 0, 99),
         balls: clamp(saved.balls, 0, 3),
         strikes: clamp(saved.strikes, 0, 2),
+        outs: clamp(saved.outs, 0, 2),
         paPitches: clamp(saved.paPitches, 0, 99),
         setupOpen: Boolean(saved.setupOpen)
       };
@@ -440,8 +506,11 @@
     $all("[data-slot]").forEach(el => el.textContent = tracker.batterIndex + 1);
     $all("[data-ondeck]").forEach(el => el.textContent = nextBatterOffset(1)?.name || "");
     $all("[data-inhole]").forEach(el => el.textContent = nextBatterOffset(2)?.name || "");
+    $all("[data-visitor-score]").forEach(el => el.textContent = tracker.visitorScore);
+    $all("[data-home-score]").forEach(el => el.textContent = tracker.homeScore);
     $all("[data-balls]").forEach(el => el.textContent = tracker.balls);
     $all("[data-strikes]").forEach(el => el.textContent = tracker.strikes);
+    $all("[data-outs]").forEach(el => el.textContent = tracker.outs);
     $all("[data-pa-pitches]").forEach(el => el.textContent = tracker.paPitches);
     $all("[data-batter-total]").forEach(el => el.textContent = batter.totalPitches);
     $all("[data-pitcher-count]").forEach(el => el.textContent = pitcher.pitches);
@@ -495,6 +564,8 @@
   document.addEventListener("click", event => {
     const pitch = event.target.closest("[data-pitch]");
     const pitcherAdjust = event.target.closest("[data-pitcher-adjust]");
+    const scoreAdjust = event.target.closest("[data-score-adjust]");
+    const outAdjust = event.target.closest("[data-out-adjust]");
 
     if (event.target.closest("[data-toggle-setup]")) {
       tracker.setupOpen = !tracker.setupOpen;
@@ -514,6 +585,15 @@
       tracker.batterIndex = clamp(tracker.batterIndex, 0, tracker.lineup.length - 1);
       tracker.activePitcherIndex = clamp(tracker.activePitcherIndex, 0, tracker.pitchers.length - 1);
       tracker.setupOpen = false;
+      commit();
+    }
+    if (scoreAdjust) {
+      const [key, delta] = scoreAdjust.dataset.scoreAdjust.split(":");
+      tracker[key] = clamp(tracker[key] + Number(delta), 0, 99);
+      commit();
+    }
+    if (outAdjust) {
+      tracker.outs = clamp(tracker.outs + Number(outAdjust.dataset.outAdjust), 0, 2);
       commit();
     }
     if (pitch) addPitch(pitch.dataset.pitch);
