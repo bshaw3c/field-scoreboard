@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Position Rotation</title>
+</head>
+<body>
+<main class="rotation-view" aria-label="Position rotation plan">
+  <header class="topbar">
+    <div>
+      <p>Personal</p>
+      <h1>Rotation Plan</h1>
+    </div>
+    <button type="button" data-toggle-setup>Setup</button>
+  </header>
+
+  <section class="setup-panel" data-setup>
+    <label>Paste inning plan
+      <textarea data-plan rows="12" spellcheck="false" placeholder="Inning 1&#10;P - Ben&#10;C - Eli&#10;1B - Max&#10;&#10;Inning 2&#10;P - Max&#10;C - Ben"></textarea>
+    </label>
+    <div class="setup-actions">
+      <button type="button" data-save>Save Plan</button>
+      <button type="button" class="danger" data-clear>Clear</button>
+    </div>
+  </section>
+
+  <section class="inning-strip" data-inning-buttons></section>
+
+  <section class="plan-card">
+    <div class="plan-heading">
+      <span>Inning</span>
+      <strong data-current-inning>1</strong>
+    </div>
+    <pre data-current-plan>No plan saved yet. Tap Setup and paste your inning rotation.</pre>
+  </section>
+
+  <section class="nav-row">
+    <button type="button" data-prev>Prev</button>
+    <button type="button" data-next>Next</button>
+  </section>
+</main>
+
+<style>
+  :root {
+    color-scheme: dark;
+    --ink: #f9fafb;
+    --muted: #b8c0cc;
+    --line: rgba(255,255,255,.18);
+    --panel: #111827;
+    --panel-2: #263241;
+    --amber: #ffcf5c;
+    --blue: #6bbcff;
+    --red: #5a1b1b;
+    --green: #26d07c;
+  }
+  * { box-sizing: border-box; }
+  html { min-height: 100%; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: #05070b;
+    color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    overflow-x: hidden;
+  }
+  button, textarea {
+    font: inherit;
+  }
+  button {
+    min-height: 48px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-2);
+    color: var(--ink);
+    font-weight: 900;
+    touch-action: manipulation;
+  }
+  .rotation-view {
+    width: min(100%, 480px);
+    min-height: 100dvh;
+    margin: 0 auto;
+    padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    display: grid;
+    align-content: start;
+    gap: 10px;
+  }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar p {
+    margin: 0 0 2px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 900;
+  }
+  .topbar h1 {
+    margin: 0;
+    font-size: 27px;
+    line-height: 1;
+  }
+  .topbar button {
+    min-height: 42px;
+    padding: 0 14px;
+  }
+  .setup-panel,
+  .plan-card,
+  .nav-row {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    padding: 10px;
+  }
+  .setup-panel {
+    display: none;
+    gap: 10px;
+  }
+  .setup-panel.is-open {
+    display: grid;
+  }
+  label {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 900;
+  }
+  textarea {
+    width: 100%;
+    min-height: 260px;
+    margin-top: 6px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    resize: vertical;
+    background: #090d14;
+    color: var(--ink);
+    font-weight: 800;
+    line-height: 1.35;
+  }
+  .setup-actions,
+  .nav-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .danger {
+    background: var(--red);
+  }
+  .inning-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .inning-strip button {
+    min-height: 48px;
+    background: #172235;
+  }
+  .inning-strip button.is-active {
+    background: var(--green);
+    border-color: var(--green);
+    color: #06140d;
+  }
+  .plan-card {
+    display: grid;
+    gap: 10px;
+  }
+  .plan-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 10px;
+  }
+  .plan-heading span {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  .plan-heading strong {
+    color: var(--amber);
+    font-size: 58px;
+    line-height: .85;
+    font-weight: 1000;
+    font-variant-numeric: tabular-nums;
+  }
+  pre {
+    margin: 0;
+    min-height: 360px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--ink);
+    font: 900 22px/1.32 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  @media (max-width: 430px) {
+    .rotation-view {
+      padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+      gap: 8px;
+    }
+    .topbar h1 {
+      font-size: 24px;
+    }
+    .setup-panel,
+    .plan-card,
+    .nav-row {
+      padding: 8px;
+    }
+    .inning-strip {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .inning-strip button {
+      min-height: 44px;
+      font-size: 14px;
+    }
+    .plan-heading strong {
+      font-size: 52px;
+    }
+    pre {
+      min-height: 330px;
+      font-size: 20px;
+    }
+  }
+</style>
+
+<script>
+(() => {
+  const storageKey = "personal-rotation-plan";
+  const $ = selector => document.querySelector(selector);
+  const $all = selector => Array.from(document.querySelectorAll(selector));
+  let state = load();
+
+  function defaultState() {
+    return {
+      rawPlan: "",
+      innings: [],
+      activeIndex: 0,
+      setupOpen: true
+    };
+  }
+
+  function load() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+      if (!saved) return defaultState();
+      const rawPlan = String(saved.rawPlan || "");
+      const innings = parsePlan(rawPlan);
+      return {
+        rawPlan,
+        innings,
+        activeIndex: Math.max(0, Math.min(Number(saved.activeIndex) || 0, Math.max(innings.length - 1, 0))),
+        setupOpen: Boolean(saved.setupOpen)
+      };
+    } catch {
+      return defaultState();
+    }
+  }
+
+  function save() {
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#39;"
+    })[char]);
+  }
+
+  function parsePlan(raw) {
+    const text = String(raw || "").trim();
+    if (!text) return [];
+    const lines = text.split(/\r?\n/);
+    const sections = [];
+    let current = null;
+
+    lines.forEach(line => {
+      const match = line.match(/^\s*(?:inning\s*)?(\d+)(?:st|nd|rd|th)?(?:\s*inning)?\s*[:\-\)]?\s*$/i);
+      if (match) {
+        if (current) sections.push(current);
+        current = { inning: match[1], lines: [] };
+        return;
+      }
+      if (!current) current = { inning: String(sections.length + 1), lines: [] };
+      current.lines.push(line);
+    });
+    if (current) sections.push(current);
+
+    if (sections.length <= 1 && text.includes("\n\n")) {
+      return text.split(/\n\s*\n/).filter(Boolean).map((section, index) => ({
+        inning: String(index + 1),
+        body: section.trim()
+      }));
+    }
+
+    return sections.map((section, index) => ({
+      inning: section.inning || String(index + 1),
+      body: section.lines.join("\n").trim() || "(No notes for this inning)"
+    }));
+  }
+
+  function activePlan() {
+    return state.innings[state.activeIndex] || null;
+  }
+
+  function renderButtons() {
+    const holder = $("[data-inning-buttons]");
+    if (!holder) return;
+    const innings = state.innings.length ? state.innings : [{ inning: "1", body: "" }];
+    holder.innerHTML = innings.map((item, index) => (
+      `<button type="button" data-inning="${index}" class="${index === state.activeIndex ? "is-active" : ""}">${escapeHtml(item.inning)}</button>`
+    )).join("");
+  }
+
+  function render() {
+    const setup = $("[data-setup]");
+    if (setup) setup.classList.toggle("is-open", state.setupOpen);
+    const input = $("[data-plan]");
+    if (input && document.activeElement !== input) input.value = state.rawPlan;
+    const current = activePlan();
+    $("[data-current-inning]").textContent = current ? current.inning : "1";
+    $("[data-current-plan]").textContent = current ? current.body : "No plan saved yet. Tap Setup and paste your inning rotation.";
+    renderButtons();
+  }
+
+  function commit() {
+    save();
+    render();
+  }
+
+  document.addEventListener("click", event => {
+    const inningButton = event.target.closest("[data-inning]");
+    if (event.target.closest("[data-toggle-setup]")) {
+      state.setupOpen = !state.setupOpen;
+      commit();
+    }
+    if (event.target.closest("[data-save]")) {
+      state.rawPlan = $("[data-plan]").value;
+      state.innings = parsePlan(state.rawPlan);
+      state.activeIndex = 0;
+      state.setupOpen = false;
+      commit();
+    }
+    if (event.target.closest("[data-clear]") && confirm("Clear the rotation plan?")) {
+      state = defaultState();
+      commit();
+    }
+    if (inningButton) {
+      state.activeIndex = Number(inningButton.dataset.inning) || 0;
+      commit();
+    }
+    if (event.target.closest("[data-prev]")) {
+      state.activeIndex = Math.max(0, state.activeIndex - 1);
+      commit();
+    }
+    if (event.target.closest("[data-next]")) {
+      state.activeIndex = Math.min(Math.max(state.innings.length - 1, 0), state.activeIndex + 1);
+      commit();
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
