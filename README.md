@@ -34,6 +34,14 @@ http://localhost:4173/hub
 
 Each field on the hub opens that field's full-size display page.
 
+Open the personal game tracker:
+
+```text
+http://localhost:4173/tracker
+```
+
+The tracker is designed for phone portrait use. It stores batting order, pitcher names, batter count, active batter, and pitch totals in that phone's browser storage.
+
 ## Control Flow
 
 - Ball, Strike, and Foul automatically add one pitch to the defensive pitcher.
@@ -56,6 +64,7 @@ Once deployed, use:
 https://your-scoreboard-site.example/display?room=FIELD1
 https://your-scoreboard-site.example/control?room=FIELD1
 https://your-scoreboard-site.example/hub
+https://your-scoreboard-site.example/tracker
 ```
 
 Available field rooms are `FIELD1`, `FIELD2`, `FIELD3`, `FIELD4`, and `FIELD5`.
