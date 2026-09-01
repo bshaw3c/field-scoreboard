@@ -42,6 +42,14 @@ http://localhost:4173/tracker
 
 The tracker is designed for phone portrait use. It stores batting order, pitcher names, batter count, active batter, and pitch totals in that phone's browser storage.
 
+Open the personal position rotation page:
+
+```text
+http://localhost:4173/rotation
+```
+
+The rotation page stores a pasted inning-by-inning position plan in that phone's browser storage.
+
 ## Control Flow
 
 - Ball, Strike, and Foul automatically add one pitch to the defensive pitcher.
@@ -65,6 +73,7 @@ https://your-scoreboard-site.example/display?room=FIELD1
 https://your-scoreboard-site.example/control?room=FIELD1
 https://your-scoreboard-site.example/hub
 https://your-scoreboard-site.example/tracker
+https://your-scoreboard-site.example/rotation
 ```
 
 Available field rooms are `FIELD1`, `FIELD2`, `FIELD3`, `FIELD4`, and `FIELD5`.
