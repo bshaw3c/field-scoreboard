@@ -29,6 +29,12 @@
         <input data-home-name maxlength="16" autocomplete="off">
       </label>
     </div>
+    <label>We are
+      <select data-team-side>
+        <option value="home">Home</option>
+        <option value="visitor">Visitor</option>
+      </select>
+    </label>
     <label>Batting order
       <textarea data-lineup rows="9" spellcheck="false" placeholder="1. Player name&#10;2. Player name&#10;3. Player name"></textarea>
     </label>
@@ -60,8 +66,23 @@
     </article>
   </section>
 
+  <section class="game-flow">
+    <article class="panel flow-card">
+      <span>Inning</span>
+      <strong data-inning>1</strong>
+    </article>
+    <article class="panel flow-card">
+      <span data-half-label>Top</span>
+      <strong data-mode>Batting</strong>
+    </article>
+    <button type="button" data-end-half>
+      <span data-end-half-label>End Top</span>
+      <strong>Half</strong>
+    </button>
+  </section>
+
   <section class="panel at-bat">
-    <span>At Bat</span>
+    <span data-at-bat-label>At Bat</span>
     <strong data-up>Player 1</strong>
     <div class="subline">
       <span>#<b data-slot>1</b></span>
@@ -106,7 +127,7 @@
   </section>
 
   <section class="panel pitcher-card">
-    <label>Pitcher
+    <label data-pitcher-label>Our Pitcher
       <select data-active-pitcher></select>
     </label>
     <div class="pitcher-line">
@@ -254,6 +275,7 @@
   .setup-actions,
   .team-name-grid,
   .score-row,
+  .game-flow,
   .next-row,
   .pitch-grid,
   .correction-grid {
@@ -265,6 +287,38 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
+  }
+  .game-flow {
+    grid-template-columns: .82fr 1.1fr 1fr;
+  }
+  .flow-card {
+    display: grid;
+    place-items: center;
+    min-height: 64px;
+  }
+  .flow-card strong {
+    color: var(--blue);
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 1000;
+  }
+  [data-end-half] {
+    display: grid;
+    place-items: center;
+    gap: 2px;
+    min-height: 64px;
+    background: #17351f;
+    border-color: rgba(38, 208, 124, .55);
+  }
+  [data-end-half] span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  [data-end-half] strong {
+    font-size: 22px;
+    line-height: 1;
   }
   .danger {
     background: var(--red);
@@ -414,6 +468,17 @@
     .correction-grid {
       padding: 8px;
     }
+    .game-flow {
+      grid-template-columns: .75fr 1.15fr 1fr;
+    }
+    .flow-card,
+    [data-end-half] {
+      min-height: 58px;
+    }
+    .flow-card strong,
+    [data-end-half] strong {
+      font-size: 20px;
+    }
     .at-bat > strong {
       font-size: 32px;
     }
@@ -451,10 +516,13 @@
       pitchers: [{ name: "Pitcher 1", pitches: 0 }],
       batterIndex: 0,
       activePitcherIndex: 0,
+      teamSide: "home",
       visitorName: "Visitor",
       homeName: "Home",
       visitorScore: 0,
       homeScore: 0,
+      inning: 1,
+      half: "TOP",
       balls: 0,
       strikes: 0,
       outs: 0,
@@ -485,10 +553,13 @@
         pitchers,
         batterIndex: clamp(saved.batterIndex, 0, lineup.length - 1),
         activePitcherIndex: clamp(saved.activePitcherIndex, 0, pitchers.length - 1),
+        teamSide: saved.teamSide === "visitor" ? "visitor" : "home",
         visitorName: cleanTeamName(saved.visitorName, "Visitor"),
         homeName: cleanTeamName(saved.homeName, "Home"),
         visitorScore: clamp(saved.visitorScore, 0, 99),
         homeScore: clamp(saved.homeScore, 0, 99),
+        inning: clamp(saved.inning, 1, 99),
+        half: saved.half === "BOT" ? "BOT" : "TOP",
         balls: clamp(saved.balls, 0, 3),
         strikes: clamp(saved.strikes, 0, 2),
         outs: clamp(saved.outs, 0, 2),
@@ -542,9 +613,22 @@
     return tracker.pitchers[tracker.activePitcherIndex] || tracker.pitchers[0];
   }
 
+  function battingSide() {
+    return tracker.half === "TOP" ? "visitor" : "home";
+  }
+
+  function isOurAtBat() {
+    return battingSide() === tracker.teamSide;
+  }
+
+  function halfLabel() {
+    return tracker.half === "TOP" ? "Top" : "Bottom";
+  }
+
   function render() {
     const batter = activeBatter();
     const pitcher = activePitcher();
+    const batting = isOurAtBat();
     document.querySelector("[data-setup-panel]").classList.toggle("is-open", tracker.setupOpen);
     $all("[data-lineup]").forEach(el => {
       if (document.activeElement !== el) el.value = tracker.lineup.map((player, index) => `${index + 1}. ${player.name}`).join("\n");
@@ -558,10 +642,19 @@
     $all("[data-home-name]").forEach(el => {
       if (document.activeElement !== el) el.value = tracker.homeName;
     });
+    $all("[data-team-side]").forEach(el => {
+      if (document.activeElement !== el) el.value = tracker.teamSide;
+    });
     $all("[data-up]").forEach(el => el.textContent = batter.name);
     $all("[data-slot]").forEach(el => el.textContent = tracker.batterIndex + 1);
     $all("[data-ondeck]").forEach(el => el.textContent = nextBatterOffset(1)?.name || "");
     $all("[data-inhole]").forEach(el => el.textContent = nextBatterOffset(2)?.name || "");
+    $all("[data-inning]").forEach(el => el.textContent = tracker.inning);
+    $all("[data-half-label]").forEach(el => el.textContent = halfLabel());
+    $all("[data-mode]").forEach(el => el.textContent = batting ? "Batting" : "Fielding");
+    $all("[data-end-half-label]").forEach(el => el.textContent = `End ${halfLabel()}`);
+    $all("[data-at-bat-label]").forEach(el => el.textContent = batting ? "At Bat" : "Next Up");
+    $all("[data-pitcher-label]").forEach(el => el.firstChild.textContent = batting ? "Our Pitcher (idle) " : "Our Pitcher ");
     $all("[data-visitor-label]").forEach(el => el.textContent = tracker.visitorName);
     $all("[data-home-label]").forEach(el => el.textContent = tracker.homeName);
     $all("[data-visitor-score]").forEach(el => el.textContent = tracker.visitorScore);
@@ -592,30 +685,76 @@
     commit();
   }
 
+  function clearCount() {
+    tracker.balls = 0;
+    tracker.strikes = 0;
+    tracker.paPitches = 0;
+  }
+
+  function addOut() {
+    if (tracker.outs >= 2) {
+      endHalfInning();
+      return true;
+    }
+    tracker.outs = clamp(tracker.outs + 1, 0, 2);
+    return false;
+  }
+
+  function finishPlateAppearance(advanceOurBatter) {
+    if (advanceOurBatter) {
+      tracker.batterIndex = (tracker.batterIndex + 1) % tracker.lineup.length;
+    }
+    clearCount();
+  }
+
   function addPitch(kind) {
-    const batter = activeBatter();
-    const pitcher = activePitcher();
-    batter.totalPitches = clamp(batter.totalPitches + 1, 0, 999);
-    pitcher.pitches = clamp(pitcher.pitches + 1, 0, 999);
-    tracker.paPitches = clamp(tracker.paPitches + 1, 0, 99);
+    const batting = isOurAtBat();
+    if (batting) {
+      const batter = activeBatter();
+      batter.totalPitches = clamp(batter.totalPitches + 1, 0, 999);
+      tracker.paPitches = clamp(tracker.paPitches + 1, 0, 99);
+    } else {
+      const pitcher = activePitcher();
+      pitcher.pitches = clamp(pitcher.pitches + 1, 0, 999);
+    }
 
     if (kind === "ball") {
       tracker.balls += 1;
-      if (tracker.balls >= 4) return advanceBatter(1);
+      if (tracker.balls >= 4) {
+        finishPlateAppearance(batting);
+        return commit();
+      }
     }
     if (kind === "strike") {
       tracker.strikes += 1;
-      if (tracker.strikes >= 3) return advanceBatter(1);
+      if (tracker.strikes >= 3) {
+        finishPlateAppearance(batting);
+        if (addOut()) return;
+        return commit();
+      }
     }
     if (kind === "foul") {
       tracker.strikes = tracker.strikes >= 2 ? 2 : tracker.strikes + 1;
     }
     if (kind === "inplay") {
-      return advanceBatter(1);
+      finishPlateAppearance(batting);
+      return commit();
     }
 
     tracker.balls = clamp(tracker.balls, 0, 3);
     tracker.strikes = clamp(tracker.strikes, 0, 2);
+    commit();
+  }
+
+  function endHalfInning() {
+    clearCount();
+    tracker.outs = 0;
+    if (tracker.half === "TOP") {
+      tracker.half = "BOT";
+    } else {
+      tracker.half = "TOP";
+      tracker.inning = clamp(tracker.inning + 1, 1, 99);
+    }
     commit();
   }
 
@@ -634,6 +773,7 @@
       const oldPitchers = tracker.pitchers;
       tracker.visitorName = cleanTeamName(document.querySelector("[data-visitor-name]").value, "Visitor");
       tracker.homeName = cleanTeamName(document.querySelector("[data-home-name]").value, "Home");
+      tracker.teamSide = document.querySelector("[data-team-side]").value === "visitor" ? "visitor" : "home";
       tracker.lineup = parseNames(document.querySelector("[data-lineup]").value, "Player", 1).map((name, index) => ({
         name,
         totalPitches: oldLineup[index]?.totalPitches || 0
@@ -653,10 +793,13 @@
       commit();
     }
     if (outAdjust) {
-      tracker.outs = clamp(tracker.outs + Number(outAdjust.dataset.outAdjust), 0, 2);
+      const delta = Number(outAdjust.dataset.outAdjust);
+      if (delta > 0 && tracker.outs >= 2) return endHalfInning();
+      tracker.outs = clamp(tracker.outs + delta, 0, 2);
       commit();
     }
     if (pitch) addPitch(pitch.dataset.pitch);
+    if (event.target.closest("[data-end-half]")) endHalfInning();
     if (event.target.closest("[data-next]")) advanceBatter(1);
     if (event.target.closest("[data-prev]")) advanceBatter(-1);
     if (event.target.closest("[data-clear-count]")) {
